@@ -62,7 +62,36 @@ class RAGPipeline:
             | self.llm
             | StrOutputParser()
         )
+    def add_documents(self, new_documents: List[Document]):
+        """Add new documents to existing vector store."""
+        if self.vector_store is None:
+            self.initialize_from_documents(new_documents)
+        else:
+            # Get existing collection name
+            collection = self.vector_store._collection.name
+            
+            # Add new documents to existing Chroma collection
+            Chroma.from_documents(
+                documents=new_documents,
+                embedding=self.embeddings,
+                collection_name=collection,
+                persist_directory="./chroma_db"
+            )
+            
+            # Refresh retriever
+            self.retriever = self.vector_store.as_retriever(
+                search_type="similarity",
+                search_kwargs={"k": 3}
+            )
 
+    def cleanup(self):
+        """Release resources and clean up."""
+        if self.vector_store is not None:
+            self.vector_store.delete_collection()
+            self.vector_store = None
+        self.retriever = None
+        self.chain = None
+        torch.cuda.empty_cache()
 
 
     def query(self, question: str) -> str:
@@ -73,4 +102,5 @@ class RAGPipeline:
         try:
             return self.chain.invoke(question)
         except Exception as e:
+
             return f"Error processing your query: {str(e)}"
