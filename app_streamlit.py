@@ -57,15 +57,28 @@ with st.sidebar:
         
         try:
             with st.spinner("Processing document..."):
-                documents = preprocessor.process_file(file_path)
-                st.session_state.rag_pipeline = RAGPipeline()
-                st.session_state.rag_pipeline.initialize_from_documents(documents)
+                new_documents = preprocessor.process_file(file_path)
+
+                if st.session_state.rag_pipeline is None:
+                    st.session_state.rag_pipeline = RAGPipeline()
+                    st.session_state.rag_pipeline.initialize_from_documents(new_documents)
+                else:
+                    st.session_state.rag_pipeline.add_documents(new_documents)
+                    
                 st.session_state.document_processed = True
                 st.success("✅ Document processed successfully!")
+            
         except Exception as e:
             st.error(f"❌ Error: {str(e)}")
             st.session_state.document_processed = False
-
+# Clear button in sidebar
+with st.sidebar:
+    if st.button("❌ Clear All Documents"):
+        if st.session_state.rag_pipeline is not None:
+            st.session_state.rag_pipeline.cleanup()
+            st.session_state.rag_pipeline = None
+        st.session_state.document_processed = False
+        st.rerun()   
 # Question answering section
 st.header("❓ Ask a Question")
 question = st.text_input(
@@ -93,4 +106,5 @@ st.sidebar.markdown("---")
 if st.session_state.document_processed:
     st.sidebar.success("✅ Document ready for queries")
 else:
+
     st.sidebar.warning("⚠️ No document loaded yet")
