@@ -8,6 +8,7 @@ from langchain_core.documents import Document
 from typing import List
 import os
 import torch
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -62,6 +63,7 @@ class RAGPipeline:
             | self.llm
             | StrOutputParser()
         )
+
     def add_documents(self, new_documents: List[Document]):
         """Add new documents to existing vector store."""
         if self.vector_store is None:
@@ -93,14 +95,44 @@ class RAGPipeline:
         self.chain = None
         torch.cuda.empty_cache()
 
-
     def query(self, question: str) -> str:
         """Query the RAG pipeline."""
         if not self.chain:
             raise ValueError("Pipeline not initialized. Load documents first.")
         
+      
         try:
-            return self.chain.invoke(question)
-        except Exception as e:
+        # First retrieve documents
+            docs = self.retriever.invoke(question)
+            unique_docs = []
+            seen_content = set() 
+            for doc in docs: 
+                if doc.page_content not in seen_content:
+                    seen_content.add(doc.page_content)
+                    unique_docs.append(doc)
 
-            return f"Error processing your query: {str(e)}"
+            # Format context with page info
+            context_parts = []
+            source_info = set()
+            for doc in unique_docs:
+                source = doc.metadata.get("source", "unknown")
+                source_name = Path(source).name if not source.startswith('http') else source
+                page = doc.metadata.get("page", "N/A")
+                context_parts.append(f"From {source} (page {page}):\n{doc.page_content}")
+                source_info.add(f"{source_name}, page {page}")
+            
+            # Get the answer
+            answer = self.chain.invoke(question)
+            
+            return {
+                "answer": answer,
+                "context": "\n\n---\n\n".join(context_parts),
+                "sources": list(source_info)
+            }
+            
+        except Exception as e:
+            return {
+                "answer": f"Error: {str(e)}",
+                "context": "",
+                "sources": []
+            }
