@@ -2,8 +2,12 @@
 Overview  
 This project implements a Retrieval-Augmented Generation (RAG) pipeline chatbot that enables users to upload documents or provide URLs, then ask natural-language questions about the content. The system processes multiple file formats, generates vector embeddings, and retrieves contextually relevant answers from the uploaded data.  
 
+For the detailed setup guide please go through (Setup_Guide)[]
+
 ### ✨ Key Features  
 📂 Document Processing  
+
+
 Upload and process .csv, .txt, .docx, .sqlite / .db, .pdf, .jpeg, .jpg, .png files via the upload feature.  
 
 
