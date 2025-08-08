@@ -14,8 +14,7 @@ if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 if 'show_history' not in st.session_state:
     st.session_state.show_history = False
-if 'image_question' not in st.session_state:
-    st.session_state.image_question = None
+
 
 # Set page config
 st.set_page_config(
@@ -206,3 +205,4 @@ if st.session_state.document_processed:
     st.sidebar.success("✅ Document ready for queries")
 else:
     st.sidebar.warning("⚠️ No document loaded yet")
+
