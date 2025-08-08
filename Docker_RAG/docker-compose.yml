@@ -1,0 +1,48 @@
+#version: '3.8'
+
+services:
+  # ollama:  # Ollama LLM service
+  #   image: ollama/ollama
+  #   ports:
+  #     - "11434:11434"  # Ollama's default port
+  #   volumes:
+  #     - ollama_data:/root/.ollama  # Persist downloaded models
+  #   healthcheck:  # ← Add this section
+  #     test: ["CMD-SHELL", "ollama list || exit 1"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 40s
+  #   # Uncomment for GPU support:
+  #   # deploy:
+  #   #   resources:
+  #   #     reservations:
+  #   #       devices:
+  #   #         - driver: nvidia
+  #   #           count: 1
+  #   #           capabilities: [gpu]
+
+  chatbot_with-rag:  # Your RAG app
+    build: .
+    depends_on:
+      ollama:
+        condition: service_healthy  # Wait for Ollama to be ready
+    ports:
+      - "8501:8501"
+    environment:
+      - TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
+      - OLLAMA_HOST=http://host.docker.internal:11434  # Critical: Connect to Ollama service
+    volumes:
+      - ./uploads:/app/uploads
+      - ./chroma_db:/app/chroma_db
+    # GPU support (uncomment if needed):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+# volumes:
+#   ollama_data:  # Named volume for Ollama models

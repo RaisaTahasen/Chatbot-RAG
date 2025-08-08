@@ -1,0 +1,16 @@
+streamlit==1.32.0
+pymupdf
+PyPDF2
+PyMuPDF
+python-docx==1.1.0
+pandas==2.2.1
+pytesseract==0.3.10
+pillow==10.2.0
+langchain-chroma
+langchain-ollama
+langchain-huggingface
+sentence-transformers
+langchain-core
+langchain-text-splitters
+langchain-community
+python-dotenv==1.0.1

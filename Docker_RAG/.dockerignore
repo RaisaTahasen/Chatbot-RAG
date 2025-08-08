@@ -1,0 +1,16 @@
+# Ignore unnecessary files
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+.env
+venv
+.env.local
+*.db
+*.sqlite
+*.sqlite3
+chroma_db/
+uploads/
